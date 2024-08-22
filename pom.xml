@@ -24,6 +24,11 @@
             <artifactId>JDA</artifactId>
             <version>5.1.0</version> 
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.cognitiveservices.speech</groupId>
+            <artifactId>client-sdk</artifactId>
+            <version>1.40.0</version>
+        </dependency>
     </dependencies>
 
     <build>
