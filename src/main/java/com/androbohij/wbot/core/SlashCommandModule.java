@@ -9,8 +9,6 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  * <p> you must also <b>extend</b> {@link com.androbohij.wbot.core.ListenerModule ListenerModule}
  * in order to have your command called by a SlashCommandInteractionEvent</p>
  * 
- * <p>and importantly, dont forget to add your class to the META-INF files depending on which
- * core module class it extends/implements (if both, add it to both)
  * 
  * <p><b>Example:</b></p>
  * <pre><code>
