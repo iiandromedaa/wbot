@@ -1,3 +1,5 @@
 {
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    // of course the non null values will be non null, what are we, stupid?
+    "java.compile.nullAnalysis.mode": "disabled"
 }
