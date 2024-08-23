@@ -17,10 +17,10 @@ public class Ping extends ListenerModule implements SlashCommandModule {
 
 	@Override
 	public void addCommand(CommandListUpdateAction commands) {
-        System.out.println("added 'ping' command");
 		commands.addCommands(
             Commands.slash("ping", "gets bot ping")
         );
+        System.out.println("added Ping commands");
 	}
 
     @Override
