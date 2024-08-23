@@ -38,6 +38,10 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  */
 public interface SlashCommandModule {
 
+    /**
+     * also define setup for your module here, thats fine
+     * @param commands the commandlist from wbot
+     */
     public void addCommand(CommandListUpdateAction commands);
     
 }
