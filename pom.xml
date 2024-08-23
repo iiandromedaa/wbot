@@ -29,6 +29,12 @@
             <artifactId>client-sdk</artifactId>
             <version>1.40.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.reflections/reflections -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -54,6 +60,14 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addClasspath>true</addClasspath>
+                                <mainClass>com.androbohij.wbot.core.Main</mainClass>
+                            </manifest>
+                        </archive>
+                    </configuration>
                     <version>3.0.2</version>
                 </plugin>
                 <plugin>
