@@ -2,7 +2,6 @@ package com.androbohij.wbot.core;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -46,13 +45,11 @@ public class SaveLoad {
      * (what class the object you saved was an instance of)
      * @return an object, cast to the type input in the loadType parameter
      */
-    public static <T> T load(Class<?> caller, Class<T> loadType) {
+    public static <T> T load(Class<?> caller, Class<T> loadType) throws IOException {
         File save = new File(folder, caller.getSimpleName() + "Stores.ser");
-        try {
-            FileInputStream fis = new FileInputStream(save);
-            ObjectInputStream ois = new ObjectInputStream(fis);
+        try (FileInputStream fis = new FileInputStream(save); ObjectInputStream ois = new ObjectInputStream(fis);) {
             return loadType.cast(ois.readObject());
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         return null;
