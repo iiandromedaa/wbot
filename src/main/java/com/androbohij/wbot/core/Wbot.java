@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.events.session.ShutdownEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
@@ -32,7 +33,7 @@ public class Wbot {
      */
     public Wbot(Set<Class<?>> modules, Set<Class<?>> slashes) {
         JDALogger.setFallbackLoggerEnabled(false);
-        wbot = JDABuilder.createLight(
+        wbot = JDABuilder.create(
                 System.getenv("DISCORD_TOKEN"), 
                 EnumSet.allOf(GatewayIntent.class)
             ).addEventListeners(new EventHandler(modules)).build();
@@ -99,16 +100,27 @@ public class Wbot {
 
         @Override
         public void onReady(ReadyEvent event) {
-
+            for (Class<?> clazz : modules) {
+                callModuleEvent(clazz, "onReady", event);
+            }
         }
 
         @Override
         public void onMessageReceived(MessageReceivedEvent event) {
-
+            for (Class<?> clazz : modules) {
+                callModuleEvent(clazz, "onMessageReceived", event);
+            }
         }
 
         @Override
         public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+            for (Class<?> clazz : modules) {
+                callModuleEvent(clazz, "onSlashCommandInteraction", event);
+            }
+        }
+
+        @Override
+        public void onShutdown(ShutdownEvent event) {
             for (Class<?> clazz : modules) {
                 callModuleEvent(clazz, "onSlashCommandInteraction", event);
             }
