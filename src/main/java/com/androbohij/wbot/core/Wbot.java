@@ -122,7 +122,7 @@ public class Wbot {
         @Override
         public void onShutdown(ShutdownEvent event) {
             for (Class<?> clazz : modules) {
-                callModuleEvent(clazz, "onSlashCommandInteraction", event);
+                callModuleEvent(clazz, "onShutdown", event);
             }
         }
 
