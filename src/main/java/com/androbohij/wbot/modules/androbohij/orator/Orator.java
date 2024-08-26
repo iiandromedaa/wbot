@@ -132,7 +132,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         SpeechSynthesisResult result = speechSynthesizer.SpeakSsml(ssml);
         AudioDataStream stream = AudioDataStream.fromResult(result);
 
-        byte[] buf = new byte[16000];
+        byte[] buf = new byte[4096];
         while (stream.readData(buf) > 0) {
             //this isnt right, this SHOULDNT be right, but 48khz sample rate made it sped up, this somehow fixed it
             //i dont know why, i dont know how, the conversion code isnt mine, but it works so lets not touch it
