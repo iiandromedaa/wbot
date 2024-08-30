@@ -2,6 +2,9 @@ package com.androbohij.wbot.modules.androbohij.orator;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import javax.sound.sampled.AudioFormat;
 
@@ -34,8 +37,9 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     private static HashMap<Long, Voices> userVoicePrefs;
     private static String speechKey = System.getenv("SPEECH_KEY");
     private static String speechRegion = System.getenv("SPEECH_REGION");
-    SpeechConfig speechConfig = SpeechConfig.fromSubscription(speechKey, speechRegion);
-    SpeechSynthesizer speechSynthesizer = new SpeechSynthesizer(speechConfig, null);
+    private static SpeechConfig speechConfig = SpeechConfig.fromSubscription(speechKey, speechRegion);
+    private static SpeechSynthesizer speechSynthesizer = new SpeechSynthesizer(speechConfig, null);
+    private static Queue<TTSQueueMember> queue = new LinkedBlockingQueue<TTSQueueMember>();
 
     //its safe i promise
 	@SuppressWarnings("unchecked")
@@ -66,12 +70,33 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "tts":
-                if (event.getOption("voice") == null) {
-                    tts(event.getOption("content").getAsString(), event);
+                if (queue.isEmpty()) {
+                    queue.add(new TTSQueueMember(event.getOption("content"), 
+                        event.getUser().getIdLong(), event.getOption("voice"), event));
+                    Thread t = new Thread() {
+                        public void run() {
+                            while (!queue.isEmpty()) {
+                                try {
+                                    Thread.sleep(ttsRun(queue.peek()));
+                                    queue.poll();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    };
+                    t.start();
                 } else {
-                    tts(event.getOption("content").getAsString(), 
-                        event.getOption("voice").getAsString(), event);
+                    queue.add(new TTSQueueMember(event.getOption("content"), 
+                        event.getUser().getIdLong(), event.getOption("voice"), event));
                 }
+                event.reply("tts queued").setEphemeral(true).queue();
+                // if (event.getOption("voice") == null) {
+                //     tts(event.getOption("content").getAsString(), event);
+                // } else {
+                //     tts(event.getOption("content").getAsString(), 
+                //         event.getOption("voice").getAsString(), event);
+                // }
                 break;
             case "setvoice":
                 setVoicePrefs(event.getOption("voice").getAsString(), event);
@@ -95,26 +120,26 @@ public class Orator extends ListenerModule implements SlashCommandModule {
      * @param text
      * @param event
      */
-    private void tts(String text, SlashCommandInteractionEvent event) {
+    private long tts(String text, SlashCommandInteractionEvent event) {
         if (userVoicePrefs.get(event.getUser().getIdLong()) == null) {
-            tts(text, null, event);
+            return tts(text, null, event);
         } else {
-            tts(text, userVoicePrefs.get(event.getUser().getIdLong()).voice, event);
+            return tts(text, userVoicePrefs.get(event.getUser().getIdLong()).name(), event);
         }
     }
 
-    private void tts(String text, String voice, SlashCommandInteractionEvent event) {
+    private long tts(String text, String voice, SlashCommandInteractionEvent event) {
         IntermediaryHandler handler = joinUserVoiceChannel(event);
         if (handler == null) {
             event.reply("you arent currently in a vc!!").setEphemeral(true).queue();
-            return;
+            return 0;
         }
         Voices enumVoice = voiceFromString(voice) != null ? voiceFromString(voice) : Voices.AVA;
         String ssml = """
-                    <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" xml:lang="en-US">
+                    <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" xml:lang="%l">
                         <voice name="%d">
                             <prosody pitch="%p">
-                                <s>%s</s>
+                                %s
                             </prosody>
                         </voice>
                     </speak>
@@ -123,12 +148,16 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         if (enumVoice.equals(NEUROSAMA)) {
             ssml = ssml.replace("%d", ASHLEY.voice);
             ssml = ssml.replace("%p", "25%");
+            ssml = ssml.replace("%l", "en-US");
         } else {
             ssml = ssml.replace("%d", enumVoice.voice);
             ssml = ssml.replace("%p", "0%");
+            ssml = ssml.replace("%l", enumVoice.voice.substring(0, 5));
         }
 
-        event.reply("tts sent").setEphemeral(true).queue();
+        event.getChannel().sendMessage(event.getUser().getName() + " said: " + "*" + text + "*")
+            .queue(m -> m.delete().queueAfter(5, TimeUnit.MINUTES));
+
         SpeechSynthesisResult result = speechSynthesizer.SpeakSsml(ssml);
         AudioDataStream stream = AudioDataStream.fromResult(result);
 
@@ -141,12 +170,16 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                 AudioSendHandler.INPUT_FORMAT);
             handler.send(conv);
         }
+        //10000 ticks (100ns) per ms
+        //+0.5s delay
+        return (result.getAudioDuration()/10000) + 500;
     }
 
     private void setVoicePrefs(String voice, SlashCommandInteractionEvent event) {
         if (voiceFromString(voice) != null) {
             userVoicePrefs.put(event.getUser().getIdLong(), voiceFromString(voice));
             event.reply("voice set to " + voiceFromString(voice)).setEphemeral(true).queue();
+            SaveLoad.save(this.getClass(), userVoicePrefs);
         } else {
             event.reply("couldnt find a voice with that name").setEphemeral(true).queue();
         }
@@ -155,7 +188,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     /**
      * attempts to connect to the voice channel the user is in
      * @param event
-     * @return false if unable to join, true if joined
+     * @return audiosendhandler
      */
     private IntermediaryHandler joinUserVoiceChannel(SlashCommandInteractionEvent event) {
         Guild guild = event.getGuild();
@@ -169,6 +202,16 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         IntermediaryHandler handler = new IntermediaryHandler();
         manager.setSendingHandler(handler);
         return handler;
+    }
+
+    private long ttsRun(TTSQueueMember ttsQueueMember) {
+        if (ttsQueueMember == null)
+            return 0;
+        
+        if (ttsQueueMember.getVoice() == null)
+            return tts(ttsQueueMember.getText(), ttsQueueMember.getEvent());
+        else
+            return tts(ttsQueueMember.getText(), ttsQueueMember.getVoice(), ttsQueueMember.getEvent());
     }
 
     enum Voices {
@@ -185,8 +228,18 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         ERIC("en-US-EricNeural"),
         ROGER("en-US-RogerNeural"),
         BLUE("en-US-BlueNeural"),
-        FABLE("en-US-FableMultilingualNeural");
-        
+        NANAMI_JP("ja-JP-NanamiNeural"),
+        KEITA_JP("ja-JP-KeitaNeural"),
+        ELVIRA_ES("es-ES-ElviraNeural"),
+        DARIO_ES("es-ES-DarioNeural"),
+        FRANCISCA_PT("pt-BR-FranciscaNeural"),
+        ANTONIO_PT("pt-BR-AntonioNeural"),
+        DENISE_FR("fr-FR-DeniseNeural"),
+        HENRI_FR("fr-FR-HenriNeural"),
+        SONIA_GB("en-GB-SoniaNeural"),
+        JOANA_CA("ca-ES-JoanaNeural"),
+        ENRIC_CA("ca-ES-EnricNeural");
+
         private String voice;
 
         Voices(String voice) {
