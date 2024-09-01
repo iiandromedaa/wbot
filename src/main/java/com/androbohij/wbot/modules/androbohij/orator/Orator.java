@@ -45,7 +45,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void addCommand(CommandListUpdateAction commands) {
-        speechConfig.setSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Raw16Khz16BitMonoPcm);
+        speechConfig.setSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Raw48Khz16BitMonoPcm);
 
         try {
 			userVoicePrefs = SaveLoad.load(this.getClass(), HashMap.class);
@@ -70,6 +70,13 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "tts":
+                if (!event.getGuild().getMember(event.getUser()).getVoiceState().inAudioChannel()) {
+                    event.reply("you arent in a vc");
+                    return; 
+                }
+                event.reply("tts queued").setEphemeral(true).queue(
+                    m -> m.deleteOriginal().queueAfter(5, TimeUnit.SECONDS)
+                );
                 if (queue.isEmpty()) {
                     queue.add(new TTSQueueMember(event.getOption("content"), 
                         event.getUser().getIdLong(), event.getOption("voice"), event));
@@ -90,13 +97,6 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                     queue.add(new TTSQueueMember(event.getOption("content"), 
                         event.getUser().getIdLong(), event.getOption("voice"), event));
                 }
-                event.reply("tts queued").setEphemeral(true).queue();
-                // if (event.getOption("voice") == null) {
-                //     tts(event.getOption("content").getAsString(), event);
-                // } else {
-                //     tts(event.getOption("content").getAsString(), 
-                //         event.getOption("voice").getAsString(), event);
-                // }
                 break;
             case "setvoice":
                 setVoicePrefs(event.getOption("voice").getAsString(), event);
