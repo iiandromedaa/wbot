@@ -7,6 +7,7 @@ import java.util.Set;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
@@ -109,6 +110,13 @@ public class Wbot {
         public void onMessageReceived(MessageReceivedEvent event) {
             for (Class<?> clazz : modules) {
                 callModuleEvent(clazz, "onMessageReceived", event);
+            }
+        }
+
+        @Override
+        public void onGuildVoiceUpdate(GuildVoiceUpdateEvent event) {
+            for (Class<?> clazz : modules) {
+                callModuleEvent(clazz, "onGuildVoiceUpdate", event);
             }
         }
 
