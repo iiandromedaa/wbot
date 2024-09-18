@@ -1,9 +1,8 @@
 package com.androbohij.wbot.modules.androbohij.orator;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import javax.sound.sampled.AudioFormat;
@@ -11,15 +10,22 @@ import javax.sound.sampled.AudioFormat;
 import com.androbohij.wbot.core.ListenerModule;
 import com.androbohij.wbot.core.SaveLoad;
 import com.androbohij.wbot.core.SlashCommandModule;
+import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.ASHLEY;
+import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.NEUROSAMA;
+import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.voiceFromString;
 import com.microsoft.cognitiveservices.speech.AudioDataStream;
 import com.microsoft.cognitiveservices.speech.SpeechConfig;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisOutputFormat;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisResult;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesizer;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ShutdownEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -27,31 +33,33 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
-import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.*;
-
 /**
  * @author iiandromedaa (androbohij)
  */
 public class Orator extends ListenerModule implements SlashCommandModule {
 
-    private static HashMap<Long, Voices> userVoicePrefs;
-    private static String speechKey = System.getenv("SPEECH_KEY");
-    private static String speechRegion = System.getenv("SPEECH_REGION");
-    private static SpeechConfig speechConfig = SpeechConfig.fromSubscription(speechKey, speechRegion);
-    private static SpeechSynthesizer speechSynthesizer = new SpeechSynthesizer(speechConfig, null);
-    private static Queue<TTSQueueMember> queue = new LinkedBlockingQueue<TTSQueueMember>();
+    private static HashMap<Long, Voices> userVoicePrefs = new HashMap<>();
+
+    private static final String SPEECHKEY = System.getenv("SPEECH_KEY");
+    private static final String SPEECHREGION = System.getenv("SPEECH_REGION");
+    private static final SpeechConfig SPEECHCONFIG = SpeechConfig.fromSubscription(SPEECHKEY, SPEECHREGION);
+    private static final SpeechSynthesizer SPEECHSYNTHESIZER = new SpeechSynthesizer(SPEECHCONFIG, null);
+
+    private static HashMap<Guild, TTSQueueWrapper> map = new HashMap<>();
 
     //its safe i promise
 	@SuppressWarnings("unchecked")
 	@Override
 	public void addCommand(CommandListUpdateAction commands) {
-        speechConfig.setSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Raw48Khz16BitMonoPcm);
+        SPEECHCONFIG.setSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Raw48Khz16BitMonoPcm);
 
         try {
-			userVoicePrefs = SaveLoad.load(this.getClass(), HashMap.class);
+            //if a null is somehow saved, prevent that from destroying the bot
+            HashMap<Long, Voices> load = SaveLoad.load(this.getClass(), HashMap.class);
+			userVoicePrefs = (load == null) ? new HashMap<>() : load;
 		} catch (IOException e) {
-			userVoicePrefs = new HashMap<>();
-		}
+
+        }
 
 		commands.addCommands(
             Commands.slash("tts", "speak your mind!")
@@ -70,17 +78,30 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "tts":
+                //check if queue exists, if not create it
+                if (map.get(event.getGuild()) == null) {
+                    map.put(event.getGuild(), new TTSQueueWrapper());
+                }
+
+                TTSQueueWrapper queue = map.get(event.getGuild());
+
                 if (!event.getGuild().getMember(event.getUser()).getVoiceState().inAudioChannel()) {
-                    event.reply("you arent in a vc");
+                    event.reply("you arent in a vc").setEphemeral(true).queue(
+                        m -> m.deleteOriginal().queueAfter(5, TimeUnit.SECONDS)
+                    );
                     return; 
                 }
+
                 event.reply("tts queued").setEphemeral(true).queue(
                     m -> m.deleteOriginal().queueAfter(5, TimeUnit.SECONDS)
                 );
+
+                //if the queue is empty, create a queue reading thread
                 if (queue.isEmpty()) {
                     queue.add(new TTSQueueMember(event.getOption("content"), 
                         event.getUser().getIdLong(), event.getOption("voice"), event));
                     Thread t = new Thread() {
+                        @Override
                         public void run() {
                             while (!queue.isEmpty()) {
                                 try {
@@ -94,6 +115,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                     };
                     t.start();
                 } else {
+                    //if the queue is not empty, simply add an entry and the thread will handle it
                     queue.add(new TTSQueueMember(event.getOption("content"), 
                         event.getUser().getIdLong(), event.getOption("voice"), event));
                 }
@@ -102,6 +124,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                 setVoicePrefs(event.getOption("voice").getAsString(), event);
                 break;
             case "listvoices":
+                listVoices(event);
                 break;
             default:
                 break;
@@ -109,8 +132,21 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     }
 
     @Override
+    public void onGuildVoiceUpdate(GuildVoiceUpdateEvent event) {
+        AudioChannelUnion acu = event.getChannelLeft();
+        GuildVoiceState gvs = event.getGuild().getSelfMember().getVoiceState();
+        if (acu != null) {
+            if (gvs.inAudioChannel() && gvs.getChannel().equals(acu)) {
+                if (gvs.getChannel().getMembers().size() == 1 
+                    && gvs.getChannel().getMembers().contains(event.getGuild().getSelfMember())) {
+                    event.getGuild().getAudioManager().closeAudioConnection();
+                }
+            }
+        }
+    }
+
+    @Override
     public void onShutdown(ShutdownEvent event) {
-        System.out.println("shut");
         SaveLoad.save(this.getClass(), userVoicePrefs);
     }
 
@@ -121,7 +157,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
      * @param event
      */
     private long tts(String text, SlashCommandInteractionEvent event) {
-        if (userVoicePrefs.get(event.getUser().getIdLong()) == null) {
+        if (userVoicePrefs == null || userVoicePrefs.get(event.getUser().getIdLong()) == null) {
             return tts(text, null, event);
         } else {
             return tts(text, userVoicePrefs.get(event.getUser().getIdLong()).name(), event);
@@ -158,7 +194,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         event.getChannel().sendMessage(event.getUser().getName() + " said: " + "*" + text + "*")
             .queue(m -> m.delete().queueAfter(5, TimeUnit.MINUTES));
 
-        SpeechSynthesisResult result = speechSynthesizer.SpeakSsml(ssml);
+        SpeechSynthesisResult result = SPEECHSYNTHESIZER.SpeakSsml(ssml);
         AudioDataStream stream = AudioDataStream.fromResult(result);
 
         byte[] buf = new byte[4096];
@@ -183,6 +219,21 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         } else {
             event.reply("couldnt find a voice with that name").setEphemeral(true).queue();
         }
+    }
+
+    private void listVoices(SlashCommandInteractionEvent event) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Voice options");
+        eb.setColor(Color.BLUE);
+        eb.addField("English", "Ava\nAndrew\nEmma\nBrian\nJenny\nAmber\nAna\nAshley\nEric\nRoger\nBlue\nNeurosama", false);
+        eb.addField("Japanese", "Nanami_jp\nKeita_jp", false);
+        eb.addField("Spanish", "Elivra_es\nDario_es", false);
+        eb.addField("Portuguese", "Francisca_pt\nAntonio_pt", false);
+        eb.addField("French", "Denise_fr\nHenri_fr", false);
+        eb.addField("Br*tish", "Sonia_gb", false);
+        eb.addField("Catalan", "Joana_ca\nEnric_ca", false);
+        eb.setFooter("voice names are case insensitive");
+        event.replyEmbeds(eb.build()).setEphemeral(true).queue();
     }
 
     /**
