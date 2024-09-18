@@ -9,6 +9,9 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  * <p> you must also <b>extend</b> {@link com.androbohij.wbot.core.ListenerModule ListenerModule}
  * in order to have your command called by a SlashCommandInteractionEvent</p>
  * 
+ * <p>do not use instance variables for your module, as the way the module system works with
+ * reflections means that your module class is instantiated every time it is called, and discarded
+ * afterwards, as such, program your fields statically with that in mind</p>
  * 
  * <p><b>Example:</b></p>
  * <pre><code>
