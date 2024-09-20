@@ -33,6 +33,7 @@ public class Wbot {
      * @param slashes
      */
     public Wbot(Set<Class<?>> modules, Set<Class<?>> slashes) {
+        //TODO enable logger actually
         JDALogger.setFallbackLoggerEnabled(false);
         wbot = JDABuilder.create(
                 System.getenv("DISCORD_TOKEN"), 

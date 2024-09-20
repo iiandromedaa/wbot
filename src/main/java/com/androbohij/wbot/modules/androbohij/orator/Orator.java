@@ -121,6 +121,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                 }
                 break;
             case "setvoice":
+                //TODO logging, log this, this breaks often enough to be concerning
                 setVoicePrefs(event.getOption("voice").getAsString(), event);
                 break;
             case "listvoices":
