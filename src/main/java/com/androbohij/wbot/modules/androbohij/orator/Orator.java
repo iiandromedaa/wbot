@@ -7,12 +7,16 @@ import java.util.concurrent.TimeUnit;
 
 import javax.sound.sampled.AudioFormat;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.androbohij.wbot.core.ListenerModule;
 import com.androbohij.wbot.core.SaveLoad;
 import com.androbohij.wbot.core.SlashCommandModule;
 import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.ASHLEY;
 import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.NEUROSAMA;
 import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.voiceFromString;
+
 import com.microsoft.cognitiveservices.speech.AudioDataStream;
 import com.microsoft.cognitiveservices.speech.SpeechConfig;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisOutputFormat;
@@ -38,7 +42,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  */
 public class Orator extends ListenerModule implements SlashCommandModule {
 
-    private static HashMap<Long, Voices> userVoicePrefs = new HashMap<>();
+    private static final Logger log = LoggerFactory.getLogger(Orator.class);
 
     private static final String SPEECHKEY = System.getenv("SPEECH_KEY");
     private static final String SPEECHREGION = System.getenv("SPEECH_REGION");
@@ -46,6 +50,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     private static final SpeechSynthesizer SPEECHSYNTHESIZER = new SpeechSynthesizer(SPEECHCONFIG, null);
 
     private static HashMap<Guild, TTSQueueWrapper> map = new HashMap<>();
+    private static HashMap<Long, Voices> userVoicePrefs = new HashMap<>();
 
     //its safe i promise
 	@SuppressWarnings("unchecked")
@@ -58,7 +63,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
             HashMap<Long, Voices> load = SaveLoad.load(this.getClass(), HashMap.class);
 			userVoicePrefs = (load == null) ? new HashMap<>() : load;
 		} catch (IOException e) {
-
+            log.error("IOException reading saved hashmap", e.getCause());
         }
 
 		commands.addCommands(
@@ -194,6 +199,9 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         event.getChannel().sendMessage(event.getUser().getName() + " said: " + "*" + text + "*")
             .queue(m -> m.delete().queueAfter(5, TimeUnit.MINUTES));
 
+        log.info(event.getUser().getName() + " said: " + "\"" + text + "\"" 
+            + " using " + enumVoice.toString());
+        
         SpeechSynthesisResult result = SPEECHSYNTHESIZER.SpeakSsml(ssml);
         AudioDataStream stream = AudioDataStream.fromResult(result);
 
@@ -216,6 +224,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
             userVoicePrefs.put(event.getUser().getIdLong(), voiceFromString(voice));
             event.reply("voice set to " + voiceFromString(voice)).setEphemeral(true).queue();
             SaveLoad.save(this.getClass(), userVoicePrefs);
+            log.info(event.getUser().getName() + " set voice to " + voiceFromString(voice));
         } else {
             event.reply("couldnt find a voice with that name").setEphemeral(true).queue();
         }
