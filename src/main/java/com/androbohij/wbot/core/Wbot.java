@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.events.session.ShutdownEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
-import net.dv8tion.jda.internal.utils.JDALogger;
 
 //TODO MORE JAVADOCS!!!!
 /**
@@ -34,7 +33,6 @@ public class Wbot {
      */
     public Wbot(Set<Class<?>> modules, Set<Class<?>> slashes) {
         //TODO enable logger actually
-        JDALogger.setFallbackLoggerEnabled(false);
         wbot = JDABuilder.create(
                 System.getenv("DISCORD_TOKEN"), 
                 EnumSet.allOf(GatewayIntent.class)
