@@ -76,7 +76,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                 .addOption(OptionType.STRING, "voice", "name of the voice to use (case insensitive)", true),
             Commands.slash("listvoices", "displays list of voice options")
         );
-        System.out.println("added Orator commands");
+        log.info("added Orator commands");
 	}
 
     @Override

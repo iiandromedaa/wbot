@@ -41,7 +41,7 @@ public interface SlashCommandModule {
 
     /**
      * also define setup or variables for your module here, thats fine
-     * <p>also have a sysout with the format "added {YourModuleHere} commands" 
+     * <p>also have a log.info with the format "added {YourModuleHere} commands" 
      * after all commands have been added
      * @param commands the commandlist from wbot
      */

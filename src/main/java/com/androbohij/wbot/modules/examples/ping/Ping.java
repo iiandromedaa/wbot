@@ -1,8 +1,10 @@
 package com.androbohij.wbot.modules.examples.ping;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.androbohij.wbot.core.ListenerModule;
 import com.androbohij.wbot.core.SlashCommandModule;
-
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
@@ -15,12 +17,14 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  */
 public class Ping extends ListenerModule implements SlashCommandModule {
 
+    private static final Logger log = LoggerFactory.getLogger(Ping.class);
+
 	@Override
 	public void addCommand(CommandListUpdateAction commands) {
 		commands.addCommands(
             Commands.slash("ping", "gets bot ping")
         );
-        System.out.println("added Ping commands");
+        log.info("added Ping commands");
 	}
 
     @Override
@@ -33,7 +37,7 @@ public class Ping extends ListenerModule implements SlashCommandModule {
         long time = System.currentTimeMillis();
         event.reply("pong").setEphemeral(true).flatMap(e -> {
             long ping = System.currentTimeMillis() - time;
-            System.out.printf("ping: %d ms", ping);
+            log.info("ping: " + ping + " ms");
             return event.getHook().editOriginalFormat("pong: %d ms", ping);
         }).queue();
     }
