@@ -34,6 +34,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.session.ShutdownEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
@@ -68,9 +69,18 @@ public class Orator extends ListenerModule implements SlashCommandModule {
 
 		commands.addCommands(
             Commands.slash("tts", "speak your mind!")
-                .addOption(OptionType.STRING, "content", "what youll say", true)
-                //this had to be a long ass line,,,, string moment
-                .addOption(OptionType.STRING, "voice", "voice to use (optional, defaults to AvaNeural or any saved voice setting)", false)
+                .addOptions(new OptionData(OptionType.STRING, 
+                        "content", 
+                        "what youll say (max 1000 chars)", 
+                        true
+                    ).setMaxLength(1000), 
+                    //this had to be a long ass line,,,, string moment
+                    new OptionData(OptionType.STRING, 
+                        "voice", 
+                        "voice to use (optional, defaults to AvaNeural or any saved voice setting)",
+                        false
+                    ).setMaxLength(100)
+                )
                 .setGuildOnly(true),
             Commands.slash("setvoice", "choose a tts voice to use by default")
                 .addOption(OptionType.STRING, "voice", "name of the voice to use (case insensitive)", true),
