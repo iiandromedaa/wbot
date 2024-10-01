@@ -32,7 +32,6 @@ public class Wbot {
      * @param slashes
      */
     public Wbot(Set<Class<?>> modules, Set<Class<?>> slashes) {
-        //TODO enable logger actually
         wbot = JDABuilder.create(
                 System.getenv("DISCORD_TOKEN"), 
                 EnumSet.allOf(GatewayIntent.class)
