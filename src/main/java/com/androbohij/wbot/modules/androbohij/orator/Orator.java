@@ -251,11 +251,12 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         eb.setColor(Color.BLUE);
         eb.addField("English", "Ava\nAndrew\nEmma\nBrian\nJenny\nAmber\nAna\nAshley\nEric\nRoger\nBlue\nNeurosama\nFable", false);
         eb.addField("Japanese", "Nanami_jp\nKeita_jp", false);
-        eb.addField("Spanish", "Elivra_es\nDario_es", false);
+        eb.addField("Spanish", "Elivra\nDario\nAlvaro\nArnau\nElias\nNil\nSaul\nTeo\nTristanMultilingual", false);
         eb.addField("Portuguese", "Francisca_pt\nAntonio_pt", false);
         eb.addField("French", "Denise_fr\nHenri_fr", false);
         eb.addField("Br*tish", "Sonia_gb\nAiGen", false);
         eb.addField("Catalan", "Joana_ca\nEnric_ca", false);
+        eb.addField("Dominicano", "EMILIO", false);
         eb.setFooter("voice names are case insensitive");
         event.replyEmbeds(eb.build()).setEphemeral(true).queue();
     }
@@ -315,7 +316,18 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         HENRI_FR("fr-FR-HenriNeural"),
         SONIA_GB("en-GB-SoniaNeural"),
         JOANA_CA("ca-ES-JoanaNeural"),
-        ENRIC_CA("ca-ES-EnricNeural");
+        ENRIC_CA("ca-ES-EnricNeural"),
+        EMILIO("es-DO-EmilioNeural"),
+        ALVARO("es-ES-AlvaroNeural"),
+        ARNAU("es-ES-ArnauNeural"),
+        ELIAS("es-ES-EliasNeural"),
+        NIL("es-ES-NilNeural"),
+        SAUL("es-ES-SaulNeural"),
+        TEO("es-ES-TeoNeural"),
+        TristanMultilingual("es-ES-TristanMultilingualNeural");
+
+
+
 
         private String voice;
 
