@@ -15,7 +15,10 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  * 
  * <p><b>Example:</b></p>
  * <pre><code>
+ * {@literal @Version ("1.0.0")}
  * class MyCoolCommand extends ListenerModule implements SlashCommandModule {
+ * 
+ *    private static final Logger log = LoggerFactory.getLogger(MyCoolCommand.class);
  * 
  *    {@literal @Override}
  * <br>    public void addCommand(CommandListUpdateAction commands) {
@@ -23,6 +26,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  *            Commands.slash("simon", "simon says")
  *                .addOption(STRING, "content", "what the bot should say", true);
  *        );
+ *        log.info("added MyCoolCommand commands");
  *    }
  * </br>    {@literal @Override}
  *    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
@@ -38,6 +42,11 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  * @see ListenerModule
  */
 public interface SlashCommandModule {
+
+    /*
+     * Include a logger for your class, robust logging is important
+     */
+    //private static final Logger log = LoggerFactory.getLogger({YourModuleHere}.class);
 
     /**
      * also define setup or variables for your module here, thats fine

@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import com.androbohij.wbot.core.ListenerModule;
 import com.androbohij.wbot.core.SlashCommandModule;
+import com.androbohij.wbot.core.Version;
+
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
@@ -13,8 +15,8 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  * basic ping module, edits own message to show the bot's ping
  * <p>this makes a good example to see how slash command modules work in wbot
  * @author iiandromedaa (androbohij)
- * @version 1.0.0
  */
+@Version("1.0.0")
 public class Ping extends ListenerModule implements SlashCommandModule {
 
     private static final Logger log = LoggerFactory.getLogger(Ping.class);
