@@ -155,6 +155,8 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                 if (gvs.getChannel().getMembers().size() == 1 
                     && gvs.getChannel().getMembers().contains(event.getGuild().getSelfMember())) {
                     event.getGuild().getAudioManager().closeAudioConnection();
+                } else if (gvs.getChannel().getMembers().stream().allMatch(m -> m.getUser().isBot())) {
+                    event.getGuild().getAudioManager().closeAudioConnection();
                 }
             }
         }
@@ -206,13 +208,16 @@ public class Orator extends ListenerModule implements SlashCommandModule {
             ssml = ssml.replace("%l", enumVoice.voice.substring(0, 5));
         }
 
-        event.getChannel().sendMessage(event.getUser().getName() + " said: " + "*" + text + "*")
+        event.getChannel().sendMessage("[tts] " + event.getUser().getName() + " said: " + "*" + text + "*")
             .queue(m -> m.delete().queueAfter(5, TimeUnit.MINUTES));
 
         log.info(event.getUser().getName() + " said: " + "\"" + text + "\"" 
             + " using " + enumVoice.toString());
         
         SpeechSynthesisResult result = SPEECHSYNTHESIZER.SpeakSsml(ssml);
+        if (result.getAudioLength() == 0) {
+            log.info("No audio output was produced");
+        }
         AudioDataStream stream = AudioDataStream.fromResult(result);
 
         byte[] buf = new byte[4096];
@@ -244,13 +249,14 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Voice options");
         eb.setColor(Color.BLUE);
-        eb.addField("English", "Ava\nAndrew\nEmma\nBrian\nJenny\nAmber\nAna\nAshley\nEric\nRoger\nBlue\nNeurosama", false);
+        eb.addField("English", "Ava\nAndrew\nEmma\nBrian\nJenny\nAmber\nAna\nAshley\nEric\nRoger\nBlue\nNeurosama\nFable", false);
         eb.addField("Japanese", "Nanami_jp\nKeita_jp", false);
-        eb.addField("Spanish", "Elivra_es\nDario_es", false);
+        eb.addField("Spanish", "Elivra\nDario\nAlvaro\nArnau\nElias\nNil\nSaul\nTeo\nTristanMultilingual", false);
         eb.addField("Portuguese", "Francisca_pt\nAntonio_pt", false);
         eb.addField("French", "Denise_fr\nHenri_fr", false);
-        eb.addField("Br*tish", "Sonia_gb", false);
+        eb.addField("Br*tish", "Sonia_gb\nAiGen", false);
         eb.addField("Catalan", "Joana_ca\nEnric_ca", false);
+        eb.addField("Dominicano", "EMILIO", false);
         eb.setFooter("voice names are case insensitive");
         event.replyEmbeds(eb.build()).setEphemeral(true).queue();
     }
@@ -287,7 +293,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     enum Voices {
 
         NEUROSAMA("NEUROSAMA"),
-        AVA("en-US-AvaNeural"),
+        AVA("en-US-AvaMultilingualNeural"),
         ANDREW("en-US-AndrewNeural"),
         EMMA("en-US-EmmaNeural"),
         BRIAN("en-US-BrianNeural"),
@@ -298,6 +304,8 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         ERIC("en-US-EricNeural"),
         ROGER("en-US-RogerNeural"),
         BLUE("en-US-BlueNeural"),
+        AIGEN("en-US-AIGenerate1Neural"),
+        FABLE("en-US-FableMultilingualNeuralHD"),
         NANAMI_JP("ja-JP-NanamiNeural"),
         KEITA_JP("ja-JP-KeitaNeural"),
         ELVIRA_ES("es-ES-ElviraNeural"),
@@ -308,7 +316,18 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         HENRI_FR("fr-FR-HenriNeural"),
         SONIA_GB("en-GB-SoniaNeural"),
         JOANA_CA("ca-ES-JoanaNeural"),
-        ENRIC_CA("ca-ES-EnricNeural");
+        ENRIC_CA("ca-ES-EnricNeural"),
+        EMILIO("es-DO-EmilioNeural"),
+        ALVARO("es-ES-AlvaroNeural"),
+        ARNAU("es-ES-ArnauNeural"),
+        ELIAS("es-ES-EliasNeural"),
+        NIL("es-ES-NilNeural"),
+        SAUL("es-ES-SaulNeural"),
+        TEO("es-ES-TeoNeural"),
+        TristanMultilingual("es-ES-TristanMultilingualNeural");
+
+
+
 
         private String voice;
 
