@@ -24,6 +24,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 public class Wbot {
 
     private CommandListUpdateAction commands;
+    private Set<Class<?>> modules;
     private JDA wbot;
 
     /**
@@ -31,14 +32,18 @@ public class Wbot {
      * @param modules
      * @param slashes
      */
-    public Wbot(Set<Class<?>> modules, Set<Class<?>> slashes) {
+    public Wbot(Set<Class<?>> modules, Set<Class<?>> slashes, Set<Class<?>> metas) {
+        this.modules = modules;
         wbot = JDABuilder.create(
                 System.getenv("DISCORD_TOKEN"), 
                 EnumSet.allOf(GatewayIntent.class)
-            ).addEventListeners(new EventHandler(modules)).build();
+            ).addEventListeners(new EventHandler(this.modules)).build();
         commands = wbot.updateCommands();
         for (Class<?> clazz : slashes) {
             addSubTypeCommand(clazz);
+        }
+        for (Class<?> clazz : metas) {
+            setWbotReference(clazz);
         }
         commands.queue();
         
@@ -84,6 +89,27 @@ public class Wbot {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void setWbotReference(Class<?> clazz) {
+        if (SlashCommandModule.class.isAssignableFrom(clazz)) {
+            try {
+                MetaModule instance = (MetaModule) clazz
+                    .getDeclaredConstructor().newInstance();
+                Method method = MetaModule.class.getMethod(
+                    "setWbot",
+                    Wbot.class
+                );
+                method.invoke(instance, this);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    } 
+
+
+    public Set<Class<?>> getModules() {
+        return modules;
     }
 
     /**

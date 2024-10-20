@@ -1,5 +1,9 @@
 package com.androbohij.wbot.modules.androbohij.orator;
 
+import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.ASHLEY;
+import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.NEUROSAMA;
+import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.voiceFromString;
+
 import java.awt.Color;
 import java.io.IOException;
 import java.util.HashMap;
@@ -13,10 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.androbohij.wbot.core.ListenerModule;
 import com.androbohij.wbot.core.SaveLoad;
 import com.androbohij.wbot.core.SlashCommandModule;
-import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.ASHLEY;
-import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.NEUROSAMA;
-import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.voiceFromString;
-
+import com.androbohij.wbot.core.Version;
 import com.microsoft.cognitiveservices.speech.AudioDataStream;
 import com.microsoft.cognitiveservices.speech.SpeechConfig;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisOutputFormat;
@@ -41,6 +42,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * @author iiandromedaa (androbohij)
  */
+@Version("1.3.2")
 public class Orator extends ListenerModule implements SlashCommandModule {
 
     private static final Logger log = LoggerFactory.getLogger(Orator.class);
@@ -249,14 +251,15 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Voice options");
         eb.setColor(Color.BLUE);
-        eb.addField("English", "Ava\nAndrew\nEmma\nBrian\nJenny\nAmber\nAna\nAshley\nEric\nRoger\nBlue\nNeurosama\nFable", false);
+        eb.addField("English", "Ava\nAndrew\nEmma\nBrian\nJenny\nAmber" //
+            + "\nAna\nAshley\nEric\nRoger\nBlue\nNeurosama\nFable\nAiGen", false);
         eb.addField("Japanese", "Nanami_jp\nKeita_jp", false);
-        eb.addField("Spanish", "Elivra\nDario\nAlvaro\nArnau\nElias\nNil\nSaul\nTeo\nTristanMultilingual", false);
+        eb.addField("Spanish", "Elivra_es\nDario_es\nAlvaro_es\nArnau_es" //
+            + "\nElias_es\nNil_es\nSaul_es\nTeo_es\nTristan_es\nEmilio_es", false);
         eb.addField("Portuguese", "Francisca_pt\nAntonio_pt", false);
         eb.addField("French", "Denise_fr\nHenri_fr", false);
-        eb.addField("Br*tish", "Sonia_gb\nAiGen", false);
+        eb.addField("Br*tish", "Sonia_gb", false);
         eb.addField("Catalan", "Joana_ca\nEnric_ca", false);
-        eb.addField("Dominicano", "EMILIO", false);
         eb.setFooter("voice names are case insensitive");
         event.replyEmbeds(eb.build()).setEphemeral(true).queue();
     }
@@ -310,24 +313,21 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         KEITA_JP("ja-JP-KeitaNeural"),
         ELVIRA_ES("es-ES-ElviraNeural"),
         DARIO_ES("es-ES-DarioNeural"),
+        EMILIO_ES("es-DO-EmilioNeural"),
+        ALVARO_ES("es-ES-AlvaroNeural"),
+        ARNAU_ES("es-ES-ArnauNeural"),
+        ELIAS_ES("es-ES-EliasNeural"),
+        NIL_ES("es-ES-NilNeural"),
+        SAUL_ES("es-ES-SaulNeural"),
+        TEO_ES("es-ES-TeoNeural"),
+        TRISTAN_ES("es-ES-TristanMultilingualNeural"),
         FRANCISCA_PT("pt-BR-FranciscaNeural"),
         ANTONIO_PT("pt-BR-AntonioNeural"),
         DENISE_FR("fr-FR-DeniseNeural"),
         HENRI_FR("fr-FR-HenriNeural"),
         SONIA_GB("en-GB-SoniaNeural"),
         JOANA_CA("ca-ES-JoanaNeural"),
-        ENRIC_CA("ca-ES-EnricNeural"),
-        EMILIO("es-DO-EmilioNeural"),
-        ALVARO("es-ES-AlvaroNeural"),
-        ARNAU("es-ES-ArnauNeural"),
-        ELIAS("es-ES-EliasNeural"),
-        NIL("es-ES-NilNeural"),
-        SAUL("es-ES-SaulNeural"),
-        TEO("es-ES-TeoNeural"),
-        TristanMultilingual("es-ES-TristanMultilingualNeural");
-
-
-
+        ENRIC_CA("ca-ES-EnricNeural");
 
         private String voice;
 
