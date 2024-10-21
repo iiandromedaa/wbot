@@ -1,4 +1,4 @@
-package com.androbohij.wbot.modules.wbot.core;
+package com.androbohij.wbot.modules.debug.modulelog;
 
 import java.awt.Color;
 
