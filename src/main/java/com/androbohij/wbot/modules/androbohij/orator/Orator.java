@@ -19,8 +19,11 @@ import com.androbohij.wbot.core.SaveLoad;
 import com.androbohij.wbot.core.SlashCommandModule;
 import com.androbohij.wbot.core.Version;
 import com.microsoft.cognitiveservices.speech.AudioDataStream;
+import com.microsoft.cognitiveservices.speech.CancellationDetails;
+import com.microsoft.cognitiveservices.speech.CancellationReason;
 import com.microsoft.cognitiveservices.speech.ResultReason;
 import com.microsoft.cognitiveservices.speech.SpeechConfig;
+import com.microsoft.cognitiveservices.speech.SpeechSynthesisCancellationDetails;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisOutputFormat;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisResult;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesizer;
@@ -43,7 +46,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * @author iiandromedaa (androbohij)
  */
-@Version("1.3.3")
+@Version("1.3.4")
 public class Orator extends ListenerModule implements SlashCommandModule {
 
     private static final Logger log = LoggerFactory.getLogger(Orator.class);
@@ -219,8 +222,14 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         
         SpeechSynthesisResult result = SPEECHSYNTHESIZER.SpeakSsml(ssml);
 
-        if (result.getReason() != ResultReason.SynthesizingAudioCompleted)
-            log.warn(result.getReason().toString());
+        if (result.getReason() != ResultReason.SynthesizingAudioCompleted) {
+            if (result.getReason() == ResultReason.Canceled) 
+                log.warn(result.getReason().toString() + 
+                    SpeechSynthesisCancellationDetails.fromResult(result).toString()
+                );
+            else
+                log.warn(result.getReason().toString());
+        }
         if (result.getAudioLength() == 0)
             log.warn("No audio output was produced");
 
