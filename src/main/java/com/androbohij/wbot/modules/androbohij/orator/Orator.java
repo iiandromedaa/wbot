@@ -19,6 +19,7 @@ import com.androbohij.wbot.core.SaveLoad;
 import com.androbohij.wbot.core.SlashCommandModule;
 import com.androbohij.wbot.core.Version;
 import com.microsoft.cognitiveservices.speech.AudioDataStream;
+import com.microsoft.cognitiveservices.speech.ResultReason;
 import com.microsoft.cognitiveservices.speech.SpeechConfig;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisOutputFormat;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisResult;
@@ -42,7 +43,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * @author iiandromedaa (androbohij)
  */
-@Version("1.3.2")
+@Version("1.3.3")
 public class Orator extends ListenerModule implements SlashCommandModule {
 
     private static final Logger log = LoggerFactory.getLogger(Orator.class);
@@ -217,9 +218,12 @@ public class Orator extends ListenerModule implements SlashCommandModule {
             + " using " + enumVoice.toString());
         
         SpeechSynthesisResult result = SPEECHSYNTHESIZER.SpeakSsml(ssml);
-        if (result.getAudioLength() == 0) {
-            log.info("No audio output was produced");
-        }
+
+        if (result.getReason() != ResultReason.SynthesizingAudioCompleted)
+            log.warn(result.getReason().toString());
+        if (result.getAudioLength() == 0)
+            log.warn("No audio output was produced");
+
         AudioDataStream stream = AudioDataStream.fromResult(result);
 
         byte[] buf = new byte[4096];
