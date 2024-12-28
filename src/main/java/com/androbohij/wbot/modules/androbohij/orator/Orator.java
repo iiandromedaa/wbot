@@ -22,6 +22,7 @@ import com.androbohij.wbot.core.Version;
 import com.microsoft.cognitiveservices.speech.AudioDataStream;
 import com.microsoft.cognitiveservices.speech.ResultReason;
 import com.microsoft.cognitiveservices.speech.SpeechConfig;
+import com.microsoft.cognitiveservices.speech.SpeechSynthesisCancellationDetails;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisOutputFormat;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisResult;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesizer;
