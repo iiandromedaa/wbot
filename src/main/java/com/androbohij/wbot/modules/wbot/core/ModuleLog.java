@@ -18,11 +18,15 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * @author iiandromedaa (androbohij)
  */
-@Version("1.0.0")
+@Version("1.1.0")
 public class ModuleLog extends ListenerModule implements SlashCommandModule, MetaModule {
 
-    private static final Logger log = LoggerFactory.getLogger(ModuleLog.class);
-    private static Wbot wbot;
+    private final Logger log;
+    private Wbot wbot;
+
+    public ModuleLog() {
+        log = LoggerFactory.getLogger(ModuleLog.class);
+    }
 
     @Override
 	public void addCommand(CommandListUpdateAction commands) {
@@ -43,12 +47,15 @@ public class ModuleLog extends ListenerModule implements SlashCommandModule, Met
         eb.setTitle("Active Modules");
         eb.setColor(new Color(235, 125, 52));
 
-        for (Class<?> clazz : wbot.getModules()) {
-            Version version = clazz.getAnnotation(Version.class);
+        
+        for (ListenerModule listenerModule : wbot.getModules()) {
+            Version version = listenerModule.getClass().getAnnotation(Version.class);
             if (version == null)
-                log.warn(clazz.getCanonicalName() + " is missing @Version annotation");
+                log.warn(listenerModule.getClass().getCanonicalName() +
+                    " is missing @Version annotation");
             else
-                eb.addField(clazz.getSimpleName(), version.value(), false);
+                eb.addField(listenerModule.getClass().getSimpleName(),
+                    version.value(), false);
         }
         event.replyEmbeds(eb.build()).setEphemeral(true).queue();
     }

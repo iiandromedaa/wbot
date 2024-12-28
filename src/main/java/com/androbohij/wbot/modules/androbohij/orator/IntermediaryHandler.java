@@ -60,20 +60,20 @@ public class IntermediaryHandler implements AudioSendHandler {
 
     public byte[] convert(byte[] audioData, AudioFormat sourceFormat, AudioFormat targetFormat) {
         try {
-            // Create an AudioInputStream from the byte array
+            // create an AudioInputStream from the byte array
             AudioInputStream ais = new AudioInputStream(new ByteArrayInputStream(audioData), sourceFormat, audioData.length);
 
-            // Create an AudioInputStream for the converted audio data
+            // create an AudioInputStream for the converted audio data
             AudioInputStream convertedAis = AudioSystem.getAudioInputStream(targetFormat, ais);
 
-            // Create a ByteArrayOutputStream and write the converted audio data to it
+            // create a ByteArrayOutputStream and write the converted audio data to it
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int bytesRead;
             while ((bytesRead = convertedAis.read(buffer)) != -1) {
                 baos.write(buffer, 0, bytesRead);
             }
-            // Return the converted audio data
+            // return the converted audio data
             return baos.toByteArray();
 
         } catch (IOException e) {

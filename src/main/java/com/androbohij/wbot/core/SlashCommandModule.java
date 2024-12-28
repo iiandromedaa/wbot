@@ -18,17 +18,19 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  * {@literal @Version ("1.0.0")}
  * class MyCoolCommand extends ListenerModule implements SlashCommandModule {
  * 
- *    private static final Logger log = LoggerFactory.getLogger(MyCoolCommand.class);
- * 
- *    {@literal @Override}
- * <br>    public void addCommand(CommandListUpdateAction commands) {
+ *    private final Logger log;
+ *    
+ *    MyCoolCommand() {
+ *        log = LoggerFactory.getLogger(MyCoolCommand.class);
+ *    }<br><br>    {@literal @Override}
+ *    public void addCommand(CommandListUpdateAction commands) {
  *	    commands.addCommands(
  *            Commands.slash("simon", "simon says")
  *                .addOption(STRING, "content", "what the bot should say", true);
  *        );
  *        log.info("added MyCoolCommand commands");
  *    }
- * </br>    {@literal @Override}
+ * <br>    {@literal @Override}
  *    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
  *	    switch (event.getName()) {
  *            case "simon":
@@ -43,14 +45,8 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  */
 public interface SlashCommandModule {
 
-    /*
-     * Include a logger for your class, robust logging is important
-     */
-    //private static final Logger log = LoggerFactory.getLogger({YourModuleHere}.class);
-
     /**
-     * also define setup or variables for your module here, thats fine
-     * <p>also have a log.info with the format "added {YourModuleHere} commands" 
+     * <p>have a log.info with the format "added {YourModuleHere} commands" 
      * after all commands have been added
      * @param commands the commandlist from wbot
      */
