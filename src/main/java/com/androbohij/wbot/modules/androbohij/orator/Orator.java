@@ -18,9 +18,8 @@ import com.androbohij.wbot.core.ListenerModule;
 import com.androbohij.wbot.core.SaveLoad;
 import com.androbohij.wbot.core.SlashCommandModule;
 import com.androbohij.wbot.core.Version;
+
 import com.microsoft.cognitiveservices.speech.AudioDataStream;
-import com.microsoft.cognitiveservices.speech.CancellationDetails;
-import com.microsoft.cognitiveservices.speech.CancellationReason;
 import com.microsoft.cognitiveservices.speech.ResultReason;
 import com.microsoft.cognitiveservices.speech.SpeechConfig;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisCancellationDetails;
@@ -46,33 +45,44 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * @author iiandromedaa (androbohij)
  */
-@Version("1.3.4")
+@Version("1.4.0")
 public class Orator extends ListenerModule implements SlashCommandModule {
 
-    private static final Logger log = LoggerFactory.getLogger(Orator.class);
+    private final Logger log;
 
-    private static final String SPEECHKEY = System.getenv("SPEECH_KEY");
-    private static final String SPEECHREGION = System.getenv("SPEECH_REGION");
-    private static final SpeechConfig SPEECHCONFIG = SpeechConfig.fromSubscription(SPEECHKEY, SPEECHREGION);
-    private static final SpeechSynthesizer SPEECHSYNTHESIZER = new SpeechSynthesizer(SPEECHCONFIG, null);
+    private final String SPEECHKEY;
+    private final String SPEECHREGION;
+    private final SpeechConfig SPEECHCONFIG;
+    private final SpeechSynthesizer SPEECHSYNTHESIZER;
 
-    private static HashMap<Guild, TTSQueueWrapper> map = new HashMap<>();
-    private static HashMap<Long, Voices> userVoicePrefs = new HashMap<>();
+    private HashMap<Guild, TTSQueueWrapper> map = new HashMap<>();
+    private HashMap<Long, Voices> userVoicePrefs;
 
-    //its safe i promise
-	@SuppressWarnings("unchecked")
-	@Override
-	public void addCommand(CommandListUpdateAction commands) {
-        SPEECHCONFIG.setSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Raw48Khz16BitMonoPcm);
+    @SuppressWarnings("unchecked")
+    public Orator() {
+        log = LoggerFactory.getLogger(Orator.class);
 
+        SPEECHKEY = System.getenv("SPEECH_KEY");
+        SPEECHREGION = System.getenv("SPEECH_REGION");
+        SPEECHCONFIG = SpeechConfig.fromSubscription(SPEECHKEY, SPEECHREGION);
+        SPEECHSYNTHESIZER = new SpeechSynthesizer(SPEECHCONFIG, null);
+
+        SPEECHCONFIG.setSpeechSynthesisOutputFormat(
+            SpeechSynthesisOutputFormat.Raw48Khz16BitMonoPcm
+        );
+        
         try {
             //if a null is somehow saved, prevent that from destroying the bot
             HashMap<Long, Voices> load = SaveLoad.load(this.getClass(), HashMap.class);
 			userVoicePrefs = (load == null) ? new HashMap<>() : load;
 		} catch (IOException e) {
             log.error("IOException reading saved hashmap", e.getCause());
+            userVoicePrefs = new HashMap<>();
         }
+    }
 
+	@Override
+	public void addCommand(CommandListUpdateAction commands) {
 		commands.addCommands(
             Commands.slash("tts", "speak your mind!")
                 .addOptions(new OptionData(OptionType.STRING, 
@@ -222,16 +232,11 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         
         SpeechSynthesisResult result = SPEECHSYNTHESIZER.SpeakSsml(ssml);
 
-        if (result.getReason() != ResultReason.SynthesizingAudioCompleted) {
-            if (result.getReason() == ResultReason.Canceled) 
-                log.warn(result.getReason().toString() + 
-                    SpeechSynthesisCancellationDetails.fromResult(result).toString()
-                );
-            else
-                log.warn(result.getReason().toString());
-        }
         if (result.getAudioLength() == 0)
-            log.warn("No audio output was produced");
+            log.info("No audio output was produced");
+
+        if (result.getReason() != ResultReason.SynthesizingAudioCompleted)
+            log.warn(result.getReason().name());
 
         AudioDataStream stream = AudioDataStream.fromResult(result);
 
@@ -245,8 +250,8 @@ public class Orator extends ListenerModule implements SlashCommandModule {
             handler.send(conv);
         }
         //10000 ticks (100ns) per ms
-        //+0.5s delay
-        return (result.getAudioDuration()/10000) + 500;
+        //+0.25s delay
+        return (result.getAudioDuration()/10000) + 250;
     }
 
     private void setVoicePrefs(String voice, SlashCommandInteractionEvent event) {

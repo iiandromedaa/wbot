@@ -13,16 +13,10 @@ import org.reflections.scanners.Scanners;
  */
 public class Main {
 
-    private static Set<Class<?>> modules;
-    private static Set<Class<?>> slashes;
-    private static Set<Class<?>> metas;
-
     public static void main(String[] args) {
         Reflections reflections = new Reflections("com.androbohij.wbot");
-        modules = reflections.get(Scanners.SubTypes.of(ListenerModule.class).asClass());
-        slashes = reflections.get(Scanners.SubTypes.of(SlashCommandModule.class).asClass());
-        metas = reflections.get(Scanners.SubTypes.of(MetaModule.class).asClass());
-        new Wbot(modules, slashes, metas);
+        Set<Class<?>> modulesSet = reflections.get(Scanners.SubTypes.of(ListenerModule.class).asClass());
+        new Wbot(modulesSet);
     }
 
 }

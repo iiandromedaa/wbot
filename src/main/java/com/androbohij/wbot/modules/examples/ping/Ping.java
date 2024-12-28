@@ -16,10 +16,14 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  * <p>this makes a good example to see how slash command modules work in wbot
  * @author iiandromedaa (androbohij)
  */
-@Version("1.0.0")
+@Version("1.1.0")
 public class Ping extends ListenerModule implements SlashCommandModule {
 
-    private static final Logger log = LoggerFactory.getLogger(Ping.class);
+    private final Logger log;
+
+    public Ping() {
+        log = LoggerFactory.getLogger(Ping.class);
+    }
 
 	@Override
 	public void addCommand(CommandListUpdateAction commands) {
