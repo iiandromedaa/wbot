@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
  * @author iiandromedaa (androbohij)
  * @version 2.0.0
  */
+@Version("2.0.0")
 public class Wbot {
 
     private CommandListUpdateAction commands;

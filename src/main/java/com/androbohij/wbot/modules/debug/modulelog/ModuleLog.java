@@ -47,7 +47,12 @@ public class ModuleLog extends ListenerModule implements SlashCommandModule, Met
         eb.setTitle("Active Modules");
         eb.setColor(new Color(235, 125, 52));
 
-        
+        eb.addField(
+            wbot.getClass().getSimpleName() + " Core", 
+            wbot.getClass().getAnnotation(Version.class).value(), 
+            false
+        );
+
         for (ListenerModule listenerModule : wbot.getModules()) {
             Version version = listenerModule.getClass().getAnnotation(Version.class);
             if (version == null)

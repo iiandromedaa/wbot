@@ -344,7 +344,9 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         HENRI_FR("fr-FR-HenriNeural"),
         SONIA_GB("en-GB-SoniaNeural"),
         JOANA_CA("ca-ES-JoanaNeural"),
-        ENRIC_CA("ca-ES-EnricNeural");
+        ENRIC_CA("ca-ES-EnricNeural"),
+        YUNXI_ZH("zh-CN-YunxiNeural"),
+        XIAOXIAO_ZH("zh-CN-XiaoxiaoNeural");
 
         private String voice;
 
