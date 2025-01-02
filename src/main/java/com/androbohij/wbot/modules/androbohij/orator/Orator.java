@@ -44,7 +44,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * @author iiandromedaa (androbohij)
  */
-@Version("1.4.0")
+@Version("1.5.0")
 public class Orator extends ListenerModule implements SlashCommandModule {
 
     private final Logger log;
