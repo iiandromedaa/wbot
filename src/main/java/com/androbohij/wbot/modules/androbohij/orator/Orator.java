@@ -277,6 +277,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         eb.addField("French", "Denise_fr\nHenri_fr", false);
         eb.addField("Br*tish", "Sonia_gb", false);
         eb.addField("Catalan", "Joana_ca\nEnric_ca", false);
+        eb.addField("Chinese", "Yunxi_zh\nXiaoxiao_zh", false);
         eb.setFooter("voice names are case insensitive");
         event.replyEmbeds(eb.build()).setEphemeral(true).queue();
     }
@@ -344,7 +345,9 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         HENRI_FR("fr-FR-HenriNeural"),
         SONIA_GB("en-GB-SoniaNeural"),
         JOANA_CA("ca-ES-JoanaNeural"),
-        ENRIC_CA("ca-ES-EnricNeural");
+        ENRIC_CA("ca-ES-EnricNeural"),
+        YUNXI_ZH("zh-CN-YunxiNeural"),
+        XIAOXIAO_ZH("zh-CN-XiaoxiaoNeural");
 
         private String voice;
 
