@@ -44,7 +44,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * @author iiandromedaa (androbohij)
  */
-@Version("1.4.0")
+@Version("1.4.1")
 public class Orator extends ListenerModule implements SlashCommandModule {
 
     private final Logger log;
@@ -99,7 +99,8 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                 .setGuildOnly(true),
             Commands.slash("setvoice", "choose a tts voice to use by default")
                 .addOption(OptionType.STRING, "voice", "name of the voice to use (case insensitive)", true),
-            Commands.slash("listvoices", "displays list of voice options")
+            Commands.slash("listvoices", "displays list of voice options"),
+            Commands.slash("clearqueue", "clears queue in event it's clogged or full of spam idk")
         );
         log.info("added Orator commands");
 	}
@@ -156,9 +157,17 @@ public class Orator extends ListenerModule implements SlashCommandModule {
             case "listvoices":
                 listVoices(event);
                 break;
+            case "clearqueue":
+                clearQueue(event);
+                break;
             default:
                 break;
         }
+    }
+
+    private void clearQueue(SlashCommandInteractionEvent event) {
+        log.info(event.getUser().getName() + "cleared the queue!");
+        map.get(event.getGuild()).clear();
     }
 
     @Override

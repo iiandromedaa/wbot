@@ -26,4 +26,8 @@ public class TTSQueueWrapper {
         return queue.isEmpty();
     }
 
+    public void clear() {
+        queue.clear();
+    }
+
 }
