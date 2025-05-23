@@ -44,7 +44,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * @author iiandromedaa (androbohij)
  */
-@Version("1.4.1")
+@Version("1.4.2")
 public class Orator extends ListenerModule implements SlashCommandModule {
 
     private final Logger log;
@@ -167,6 +167,9 @@ public class Orator extends ListenerModule implements SlashCommandModule {
 
     private void clearQueue(SlashCommandInteractionEvent event) {
         log.info(event.getUser().getName() + "cleared the queue!");
+        event.reply("queue cleared!").setEphemeral(true).queue(
+            m -> m.deleteOriginal().queueAfter(5, TimeUnit.SECONDS)
+        );
         map.get(event.getGuild()).clear();
     }
 
