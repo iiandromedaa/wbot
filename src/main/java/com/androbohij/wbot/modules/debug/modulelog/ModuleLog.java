@@ -18,7 +18,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * @author iiandromedaa (androbohij)
  */
-@Version("1.1.0")
+@Version("1.2.0")
 public class ModuleLog extends ListenerModule implements SlashCommandModule, MetaModule {
 
     private final Logger log;
@@ -46,7 +46,7 @@ public class ModuleLog extends ListenerModule implements SlashCommandModule, Met
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Active Modules");
         eb.setColor(new Color(235, 125, 52));
-
+        eb.addField("Wbot", wbot.getClass().getAnnotation(Version.class).value(), false);
         
         for (ListenerModule listenerModule : wbot.getModules()) {
             Version version = listenerModule.getClass().getAnnotation(Version.class);

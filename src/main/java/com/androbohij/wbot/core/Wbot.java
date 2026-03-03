@@ -6,8 +6,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import club.minnced.discord.jdave.interop.JDaveSessionFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.audio.AudioModuleConfig;
 import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -21,8 +23,8 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 //TODO MORE JAVADOCS!!!!
 /**
  * @author iiandromedaa (androbohij)
- * @version 2.0.0
  */
+@Version("2.1.1")
 public class Wbot {
 
     private CommandListUpdateAction commands;
@@ -57,7 +59,10 @@ public class Wbot {
         wbot = JDABuilder.create(
                 System.getenv("DISCORD_TOKEN"), 
                 EnumSet.allOf(GatewayIntent.class)
-            ).addEventListeners(new EventHandler(this.modules)).build();
+            ).addEventListeners(new EventHandler(this.modules))
+            .setAudioModuleConfig(new AudioModuleConfig()
+                .withDaveSessionFactory(new JDaveSessionFactory())
+            ).build();
 
         commands = wbot.updateCommands();
         for (SlashCommandModule slashCommandModule : slashes) {
@@ -67,7 +72,6 @@ public class Wbot {
             metaModule.setWbot(this);
         }
         commands.queue();
-        
     }
 
     /**

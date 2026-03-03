@@ -44,7 +44,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * @author iiandromedaa (androbohij)
  */
-@Version("1.4.2")
+@Version("1.5.1")
 public class Orator extends ListenerModule implements SlashCommandModule {
 
     private final Logger log;
@@ -95,8 +95,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                         "voice to use (optional, defaults to AvaNeural or any saved voice setting)",
                         false
                     ).setMaxLength(100)
-                )
-                .setGuildOnly(true),
+                ),
             Commands.slash("setvoice", "choose a tts voice to use by default")
                 .addOption(OptionType.STRING, "voice", "name of the voice to use (case insensitive)", true),
             Commands.slash("listvoices", "displays list of voice options"),
@@ -109,6 +108,11 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "tts":
+                // because this command is technically global, valuable idiot proofing
+                if (event.getGuild() == null) {
+                    event.reply("you arent in a server!").setEphemeral(true).queue();
+                    return;
+                }
                 //check if queue exists, if not create it
                 if (map.get(event.getGuild()) == null) {
                     map.put(event.getGuild(), new TTSQueueWrapper());
