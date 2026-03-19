@@ -180,6 +180,7 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     public void onMessageReceived(MessageReceivedEvent event) {
         log.info("#"+event.getChannel().getName() + ", " + event.getMessage().getContentRaw());
         log.info(Boolean.toString(preferences.isChannelAutoTTS(event.getChannel())));
+        //TODO REFACTOR TTS TO NOT REQUIRE SLASH COMMAND INTERACTION EVENT
     }
 
     @Override
