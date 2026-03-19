@@ -1,5 +1,6 @@
 package cc.androbohij.wbot.modules.androbohij.orator;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -11,7 +12,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
-public class TTSPrefs {
+public class TTSPrefs implements Serializable {
     
     private final Logger log;
     private HashMap<Long, Voices> userVoicePrefs;

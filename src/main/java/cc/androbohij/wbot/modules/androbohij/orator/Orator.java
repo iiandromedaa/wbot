@@ -76,7 +76,11 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         try {
             //if a null is somehow saved, prevent that from destroying the bot
             TTSPrefs load = SaveLoad.load(this.getClass(), TTSPrefs.class);
-            preferences = (load == null) ? new TTSPrefs() : load;
+            if (load != null) {
+                preferences = load;
+                log.info("loaded TTS preferences successfully!");
+            } else
+                preferences = new TTSPrefs();
 		} catch (IOException | ClassCastException e) {
             log.error(e.getLocalizedMessage() + " while reading saves", e.getCause());
             preferences = new TTSPrefs();
@@ -117,10 +121,6 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                 )
                 .setContexts(InteractionContextType.GUILD)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL)),
-            Commands.slash("setautotts", "sets current channel to automatically tts messages send there")
-                .setContexts(InteractionContextType.GUILD),
-            Commands.slash("unsetautotts", "removes auto tts condition from current channel")
-                .setContexts(InteractionContextType.GUILD),
             Commands.slash("help", "learn how to use the bot")
         );
         log.info("added Orator commands");
@@ -178,9 +178,11 @@ public class Orator extends ListenerModule implements SlashCommandModule {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
+        //TODO REFACTOR TTS TO NOT REQUIRE SLASH COMMAND INTERACTION EVENT
+        if (!preferences.isChannelAutoTTS(event.getChannel()))
+            return;
         log.info("#"+event.getChannel().getName() + ", " + event.getMessage().getContentRaw());
         log.info(Boolean.toString(preferences.isChannelAutoTTS(event.getChannel())));
-        //TODO REFACTOR TTS TO NOT REQUIRE SLASH COMMAND INTERACTION EVENT
     }
 
     @Override
