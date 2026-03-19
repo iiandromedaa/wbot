@@ -1,4 +1,4 @@
-package com.androbohij.wbot.core;
+package cc.androbohij.wbot.core;
 
 import java.util.Set;
 
@@ -14,7 +14,7 @@ import org.reflections.scanners.Scanners;
 public class Main {
 
     public static void main(String[] args) {
-        Reflections reflections = new Reflections("com.androbohij.wbot");
+        Reflections reflections = new Reflections("cc.androbohij.wbot");
         Set<Class<?>> modulesSet = reflections.get(Scanners.SubTypes.of(ListenerModule.class).asClass());
         new Wbot(modulesSet);
     }

@@ -1,4 +1,4 @@
-package com.androbohij.wbot.core;
+package cc.androbohij.wbot.core;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

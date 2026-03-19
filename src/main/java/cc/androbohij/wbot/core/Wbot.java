@@ -1,4 +1,4 @@
-package com.androbohij.wbot.core;
+package cc.androbohij.wbot.core;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

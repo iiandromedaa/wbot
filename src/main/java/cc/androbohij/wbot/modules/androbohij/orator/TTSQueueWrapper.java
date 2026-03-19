@@ -1,4 +1,4 @@
-package com.androbohij.wbot.modules.androbohij.orator;
+package cc.androbohij.wbot.modules.androbohij.orator;
 
 import java.util.concurrent.LinkedBlockingQueue;
 

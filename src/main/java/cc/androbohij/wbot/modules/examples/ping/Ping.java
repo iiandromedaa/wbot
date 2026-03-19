@@ -1,12 +1,11 @@
-package com.androbohij.wbot.modules.examples.ping;
+package cc.androbohij.wbot.modules.examples.ping;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.androbohij.wbot.core.ListenerModule;
-import com.androbohij.wbot.core.SlashCommandModule;
-import com.androbohij.wbot.core.Version;
-
+import cc.androbohij.wbot.core.ListenerModule;
+import cc.androbohij.wbot.core.SlashCommandModule;
+import cc.androbohij.wbot.core.Version;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;

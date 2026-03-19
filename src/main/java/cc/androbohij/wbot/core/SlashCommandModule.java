@@ -1,4 +1,4 @@
-package com.androbohij.wbot.core;
+package cc.androbohij.wbot.core;
 
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 /**
  * <p><b>implement</b> this interface if you want your module to make use of slash commands
  * you must implement and <b>override</b> the method addCommand
- * <p> you must also <b>extend</b> {@link com.androbohij.wbot.core.ListenerModule ListenerModule}
+ * <p> you must also <b>extend</b> {@link cc.androbohij.wbot.core.ListenerModule ListenerModule}
  * in order to have your command called by a SlashCommandInteractionEvent</p>
  * 
  * <p>do not use instance variables for your module, as the way the module system works with

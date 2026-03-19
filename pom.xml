@@ -4,7 +4,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.androbohij</groupId>
+    <groupId>cc.androbohij</groupId>
     <artifactId>wbot</artifactId>
     <version>2.1.1</version>
 
@@ -80,7 +80,7 @@
                         <archive>
                             <manifest>
                                 <addClasspath>true</addClasspath>
-                                <mainClass>com.androbohij.wbot.core.Main</mainClass>
+                                <mainClass>cc.androbohij.wbot.core.Main</mainClass>
                             </manifest>
                         </archive>
                     </configuration>
@@ -91,7 +91,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>com.androbohij.wbot.core.Main</mainClass>
+                                <mainClass>cc.androbohij.wbot.core.Main</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>

@@ -1,4 +1,4 @@
-package com.androbohij.wbot.core;
+package cc.androbohij.wbot.core;
 
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 

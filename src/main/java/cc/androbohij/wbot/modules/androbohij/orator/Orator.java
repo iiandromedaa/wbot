@@ -1,8 +1,8 @@
-package com.androbohij.wbot.modules.androbohij.orator;
+package cc.androbohij.wbot.modules.androbohij.orator;
 
-import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.ASHLEY;
-import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.NEUROSAMA;
-import static com.androbohij.wbot.modules.androbohij.orator.Orator.Voices.voiceFromString;
+import static cc.androbohij.wbot.modules.androbohij.orator.Orator.Voices.ASHLEY;
+import static cc.androbohij.wbot.modules.androbohij.orator.Orator.Voices.NEUROSAMA;
+import static cc.androbohij.wbot.modules.androbohij.orator.Orator.Voices.voiceFromString;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -14,11 +14,6 @@ import javax.sound.sampled.AudioFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.androbohij.wbot.core.ListenerModule;
-import com.androbohij.wbot.core.SaveLoad;
-import com.androbohij.wbot.core.SlashCommandModule;
-import com.androbohij.wbot.core.Version;
-
 import com.microsoft.cognitiveservices.speech.AudioDataStream;
 import com.microsoft.cognitiveservices.speech.ResultReason;
 import com.microsoft.cognitiveservices.speech.SpeechConfig;
@@ -26,7 +21,12 @@ import com.microsoft.cognitiveservices.speech.SpeechSynthesisOutputFormat;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesisResult;
 import com.microsoft.cognitiveservices.speech.SpeechSynthesizer;
 
+import cc.androbohij.wbot.core.ListenerModule;
+import cc.androbohij.wbot.core.SaveLoad;
+import cc.androbohij.wbot.core.SlashCommandModule;
+import cc.androbohij.wbot.core.Version;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -34,17 +34,21 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ShutdownEvent;
+import net.dv8tion.jda.api.interactions.InteractionContextType;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 /**
  * @author iiandromedaa (androbohij)
  */
-@Version("1.5.1")
+@Version("2.0.1")
 public class Orator extends ListenerModule implements SlashCommandModule {
 
     private final Logger log;
@@ -55,9 +59,8 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     private final SpeechSynthesizer SPEECHSYNTHESIZER;
 
     private HashMap<Guild, TTSQueueWrapper> map = new HashMap<>();
-    private HashMap<Long, Voices> userVoicePrefs;
+    private TTSPrefs preferences;
 
-    @SuppressWarnings("unchecked")
     public Orator() {
         log = LoggerFactory.getLogger(Orator.class);
 
@@ -72,11 +75,12 @@ public class Orator extends ListenerModule implements SlashCommandModule {
         
         try {
             //if a null is somehow saved, prevent that from destroying the bot
-            HashMap<Long, Voices> load = SaveLoad.load(this.getClass(), HashMap.class);
-			userVoicePrefs = (load == null) ? new HashMap<>() : load;
-		} catch (IOException e) {
-            log.error("IOException reading saved hashmap", e.getCause());
-            userVoicePrefs = new HashMap<>();
+            TTSPrefs load = SaveLoad.load(this.getClass(), TTSPrefs.class);
+            preferences = (load == null) ? new TTSPrefs() : load;
+		} catch (IOException | ClassCastException e) {
+            log.error(e.getLocalizedMessage() + " while reading saves", e.getCause());
+            preferences = new TTSPrefs();
+
         }
     }
 
@@ -84,7 +88,8 @@ public class Orator extends ListenerModule implements SlashCommandModule {
 	public void addCommand(CommandListUpdateAction commands) {
 		commands.addCommands(
             Commands.slash("tts", "speak your mind!")
-                .addOptions(new OptionData(OptionType.STRING, 
+                .addOptions(
+                    new OptionData(OptionType.STRING, 
                         "content", 
                         "what youll say (max 1000 chars)", 
                         true
@@ -95,74 +100,52 @@ public class Orator extends ListenerModule implements SlashCommandModule {
                         "voice to use (optional, defaults to AvaNeural or any saved voice setting)",
                         false
                     ).setMaxLength(100)
+                )
+                .setContexts(InteractionContextType.GUILD),
+            Commands.slash("voices", "voices command group")
+                .addSubcommands(
+                    new SubcommandData("list", "view list of voices available"),
+                    new SubcommandData("set", "set your default tts voice")
+                        .addOption(OptionType.STRING, "voice", "name of the voice to use (case insensitive)", true)
                 ),
-            Commands.slash("setvoice", "choose a tts voice to use by default")
-                .addOption(OptionType.STRING, "voice", "name of the voice to use (case insensitive)", true),
-            Commands.slash("listvoices", "displays list of voice options"),
             Commands.slash("clearqueue", "clears queue in event it's clogged or full of spam idk")
+                .setContexts(InteractionContextType.GUILD),
+            Commands.slash("autotts", "autotts command group")
+                .addSubcommands(
+                    new SubcommandData("set", "sets current channel to automatically convert messages to tts"),
+                    new SubcommandData("unset", "removes autotts from channel")       
+                )
+                .setContexts(InteractionContextType.GUILD)
+                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL)),
+            Commands.slash("setautotts", "sets current channel to automatically tts messages send there")
+                .setContexts(InteractionContextType.GUILD),
+            Commands.slash("unsetautotts", "removes auto tts condition from current channel")
+                .setContexts(InteractionContextType.GUILD),
+            Commands.slash("help", "learn how to use the bot")
         );
         log.info("added Orator commands");
 	}
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        switch (event.getName()) {
+        switch (event.getFullCommandName()) {
             case "tts":
-                // because this command is technically global, valuable idiot proofing
-                if (event.getGuild() == null) {
-                    event.reply("you arent in a server!").setEphemeral(true).queue();
-                    return;
-                }
-                //check if queue exists, if not create it
-                if (map.get(event.getGuild()) == null) {
-                    map.put(event.getGuild(), new TTSQueueWrapper());
-                }
-
-                TTSQueueWrapper queue = map.get(event.getGuild());
-
-                if (!event.getGuild().getMember(event.getUser()).getVoiceState().inAudioChannel()) {
-                    event.reply("you arent in a vc").setEphemeral(true).queue(
-                        m -> m.deleteOriginal().queueAfter(5, TimeUnit.SECONDS)
-                    );
-                    return; 
-                }
-
-                event.reply("tts queued").setEphemeral(true).queue(
-                    m -> m.deleteOriginal().queueAfter(5, TimeUnit.SECONDS)
-                );
-
-                //if the queue is empty, create a queue reading thread
-                if (queue.isEmpty()) {
-                    queue.add(new TTSQueueMember(event.getOption("content"), 
-                        event.getUser().getIdLong(), event.getOption("voice"), event));
-                    Thread t = new Thread() {
-                        @Override
-                        public void run() {
-                            while (!queue.isEmpty()) {
-                                try {
-                                    Thread.sleep(ttsRun(queue.peek()));
-                                    queue.poll();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    };
-                    t.start();
-                } else {
-                    //if the queue is not empty, simply add an entry and the thread will handle it
-                    queue.add(new TTSQueueMember(event.getOption("content"), 
-                        event.getUser().getIdLong(), event.getOption("voice"), event));
-                }
+                queueTTS(event);
                 break;
-            case "setvoice":
+            case "voices set":
                 setVoicePrefs(event.getOption("voice").getAsString(), event);
                 break;
-            case "listvoices":
+            case "voices list":
                 listVoices(event);
                 break;
             case "clearqueue":
                 clearQueue(event);
+                break;
+            case "autotts set":
+                preferences.setChannelAutoTTS(event);
+                break;
+            case "autotts unset":
+                preferences.unsetChannelAutoTTS(event);
                 break;
             default:
                 break;
@@ -194,8 +177,58 @@ public class Orator extends ListenerModule implements SlashCommandModule {
     }
 
     @Override
+    public void onMessageReceived(MessageReceivedEvent event) {
+        log.info("#"+event.getChannel().getName() + ", " + event.getMessage().getContentRaw());
+        log.info(Boolean.toString(preferences.isChannelAutoTTS(event.getChannel())));
+    }
+
+    @Override
     public void onShutdown(ShutdownEvent event) {
-        SaveLoad.save(this.getClass(), userVoicePrefs);
+        SaveLoad.save(this.getClass(), preferences);
+    }
+
+    private void queueTTS(SlashCommandInteractionEvent event) {
+        //check if queue exists, if not create it
+        if (map.get(event.getGuild()) == null) {
+            map.put(event.getGuild(), new TTSQueueWrapper());
+        }
+
+        TTSQueueWrapper queue = map.get(event.getGuild());
+
+        if (!event.getGuild().getMember(event.getUser()).getVoiceState().inAudioChannel()) {
+            event.reply("you arent in a vc").setEphemeral(true).queue(
+                m -> m.deleteOriginal().queueAfter(5, TimeUnit.SECONDS)
+            );
+            return; 
+        }
+
+        event.reply("tts queued").setEphemeral(true).queue(
+            m -> m.deleteOriginal().queueAfter(5, TimeUnit.SECONDS)
+        );
+
+        //if the queue is empty, create a queue reading thread
+        if (queue.isEmpty()) {
+            queue.add(new TTSQueueMember(event.getOption("content"), 
+                event.getUser().getIdLong(), event.getOption("voice"), event));
+            Thread t = new Thread() {
+                @Override
+                public void run() {
+                    while (!queue.isEmpty()) {
+                        try {
+                            Thread.sleep(ttsRun(queue.peek()));
+                            queue.poll();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
+            t.start();
+        } else {
+            //if the queue is not empty, simply add an entry and the thread will handle it
+            queue.add(new TTSQueueMember(event.getOption("content"), 
+                event.getUser().getIdLong(), event.getOption("voice"), event));
+        }
     }
 
     /**
@@ -205,11 +238,15 @@ public class Orator extends ListenerModule implements SlashCommandModule {
      * @param event
      */
     private long tts(String text, SlashCommandInteractionEvent event) {
-        if (userVoicePrefs == null || userVoicePrefs.get(event.getUser().getIdLong()) == null) {
-            return tts(text, null, event);
+        if (preferences == null || preferences.getUserVoice(event.getUser().getIdLong()) == null) {
+            return tts(text, "ava", event);
         } else {
-            return tts(text, userVoicePrefs.get(event.getUser().getIdLong()).name(), event);
+            return tts(text, preferences.getUserVoice(event.getUser().getIdLong()), event);
         }
+    }
+
+    private long tts(String text, Voices voice, SlashCommandInteractionEvent event) {
+        return tts(text, voice.name(), event);
     }
 
     private long tts(String text, String voice, SlashCommandInteractionEvent event) {
@@ -271,9 +308,9 @@ public class Orator extends ListenerModule implements SlashCommandModule {
 
     private void setVoicePrefs(String voice, SlashCommandInteractionEvent event) {
         if (voiceFromString(voice) != null) {
-            userVoicePrefs.put(event.getUser().getIdLong(), voiceFromString(voice));
+            preferences.putUserVoice(event.getUser().getIdLong(), voiceFromString(voice));
             event.reply("voice set to " + voiceFromString(voice)).setEphemeral(true).queue();
-            SaveLoad.save(this.getClass(), userVoicePrefs);
+            SaveLoad.save(this.getClass(), preferences);
             log.info(event.getUser().getName() + " set voice to " + voiceFromString(voice));
         } else {
             event.reply("couldnt find a voice with that name").setEphemeral(true).queue();

@@ -1,15 +1,15 @@
-package com.androbohij.wbot.modules.debug.modulelog;
+package cc.androbohij.wbot.modules.debug.modulelog;
 
 import java.awt.Color;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.androbohij.wbot.core.ListenerModule;
-import com.androbohij.wbot.core.MetaModule;
-import com.androbohij.wbot.core.SlashCommandModule;
-import com.androbohij.wbot.core.Version;
-import com.androbohij.wbot.core.Wbot;
+import cc.androbohij.wbot.core.ListenerModule;
+import cc.androbohij.wbot.core.MetaModule;
+import cc.androbohij.wbot.core.SlashCommandModule;
+import cc.androbohij.wbot.core.Version;
+import cc.androbohij.wbot.core.Wbot;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
